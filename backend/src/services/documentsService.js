@@ -1,8 +1,8 @@
 const crypto = require('node:crypto');
 const documentsRepository = require('../repositories/documentsRepository');
 
-function registerDocument({ file, owner }) {
-  const document = {
+function createDocumentMetadata({ file, owner }) {
+  return {
     id: crypto.randomUUID(),
     originalName: file.originalname,
     storedName: file.filename,
@@ -11,6 +11,10 @@ function registerDocument({ file, owner }) {
     uploadedAt: new Date().toISOString(),
     owner,
   };
+}
+
+function registerDocument({ file, owner }) {
+  const document = createDocumentMetadata({ file, owner });
   return documentsRepository.save(document);
 }
 
