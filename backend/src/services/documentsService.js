@@ -1,29 +1,42 @@
 const crypto = require('node:crypto');
 const documentsRepository = require('../repositories/documentsRepository');
 
-function createDocumentMetadata({ file, owner }) {
+function createDocumentMetadata({
+  file,
+  owner,
+  id = crypto.randomUUID(),
+  uploadedAt = new Date().toISOString(),
+}) {
   return {
-    id: crypto.randomUUID(),
+    id,
     originalName: file.originalname,
     storedName: file.filename,
     size: file.size,
     mimeType: file.mimetype,
-    uploadedAt: new Date().toISOString(),
+    uploadedAt,
     owner,
   };
 }
 
-function registerDocument({ file, owner }) {
-  const document = createDocumentMetadata({ file, owner });
-  return documentsRepository.save(document);
+function createDocumentsService({ repository }) {
+  return {
+    registerDocument({ file, owner }) {
+      const document = createDocumentMetadata({ file, owner });
+      return repository.save(document);
+    },
+    listDocuments() {
+      return repository.findAll();
+    },
+    getDocumentById(id) {
+      return repository.findById(id);
+    },
+  };
 }
 
-function listDocuments() {
-  return documentsRepository.findAll();
-}
+const defaultDocumentsService = createDocumentsService({ repository: documentsRepository });
 
-function getDocumentById(id) {
-  return documentsRepository.findById(id);
-}
-
-module.exports = { registerDocument, listDocuments, getDocumentById };
+module.exports = {
+  ...defaultDocumentsService,
+  createDocumentMetadata,
+  createDocumentsService,
+};
